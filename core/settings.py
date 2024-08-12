@@ -11,7 +11,7 @@ https://docs.djangoproject.com/en/5.0/ref/settings/
 """
 
 from pathlib import Path
-
+from decouple import config
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -20,17 +20,18 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-39l1e#=blzk=m159qsk1dsm5ma74my&h@e)0oqi#pxnos=(zjt'
+SECRET_KEY = config('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ["*"]
 
 
 # Application definition
 
 INSTALLED_APPS = [
+    "daphne",
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -39,10 +40,12 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'data_sync',
     # third party packages
-    'django_data_seed'
+    'corsheaders',
+    'django_data_seed',
 ]
 
 MIDDLEWARE = [
+    "corsheaders.middleware.CorsMiddleware",
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -54,6 +57,9 @@ MIDDLEWARE = [
 ]
 
 ROOT_URLCONF = 'core.urls'
+
+
+DATA_SYNC_SENDER_TOKEN = config('DATA_SYNC_SENDER_TOKEN')
 
 TEMPLATES = [
     {
@@ -70,9 +76,9 @@ TEMPLATES = [
         },
     },
 ]
-
+CORS_ALLOW_ALL_ORIGINS = True
 WSGI_APPLICATION = 'core.wsgi.application'
-
+ASGI_APPLICATION = "core.asgi.application"
 
 # Database
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
@@ -128,3 +134,16 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 ENABLE_DJANGO_DATA_SEED_AUTO_BACKUP = True
 ENABLE_DJANGO_DATA_SEED_AUTO_LOG_ENTRY = True
+
+
+CELERY_BROKER_URL = config("REDIS_PORT")
+
+# Redis Channels Configuration
+CHANNEL_LAYERS = {
+    "default": {
+        "BACKEND": "channels_redis.core.RedisChannelLayer",
+        "CONFIG": {
+            "hosts": [("localhost", 6379)],
+        },
+    },
+}
