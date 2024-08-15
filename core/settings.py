@@ -147,3 +147,4 @@ CHANNEL_LAYERS = {
         },
     },
 }
+SENDER_HOST = config('SENDER_HOST')

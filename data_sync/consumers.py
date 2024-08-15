@@ -19,15 +19,13 @@ class DataSyncReceiverConsumer(WebsocketConsumer):
 
     def connect(self):
         try:
-            print(1)
             self.accept()
             query_string_bytes = self.scope.get("query_string", b"")
             query_string = parse_qs(query_string_bytes.decode("utf-8"))
             token_info = query_string["token"][0]
-            print('token_info', token_info)
             if token_info == False:
                 self.disconnect("UNAUTHORIZED")
-            self.conversation_name = "ftyffghfghfgh"
+            self.conversation_name = "receiver_socket"
             async_to_sync(self.channel_layer.group_add)(
                 self.conversation_name,
                 self.channel_name,
@@ -35,7 +33,7 @@ class DataSyncReceiverConsumer(WebsocketConsumer):
             async_to_sync(self.channel_layer.group_send)(
                 self.conversation_name,
                 {
-                    "type": "receiver_layer",
+                    "type": "data_sync",
                     "status": "sending",
                     "conversations": self.conversation_name,
                     "data": {
@@ -47,7 +45,6 @@ class DataSyncReceiverConsumer(WebsocketConsumer):
             )
 
         except Exception as e:
-
             self.disconnect(
                 close_code=f"Receiver was disconnected due to , {str(e)}")
 
@@ -72,7 +69,6 @@ class DataSyncReceiverConsumer(WebsocketConsumer):
                 close_code=f"Receiver was disconnected due to , {str(e)}")
 
     def disconnect(self, close_code="Web disconnected"):
-        print("websocket is disconnected", close_code)
         self.conversation_name = "data_sync"
         async_to_sync(self.channel_layer.group_add)(
             self.conversation_name,
