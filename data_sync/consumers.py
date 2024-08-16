@@ -69,23 +69,24 @@ class DataSyncReceiverConsumer(WebsocketConsumer):
                 close_code=f"Receiver was disconnected due to , {str(e)}")
 
     def disconnect(self, close_code="Web disconnected"):
-        self.conversation_name = "data_sync"
-        async_to_sync(self.channel_layer.group_add)(
-            self.conversation_name,
-            self.channel_name,
-        )
-        async_to_sync(self.channel_layer.group_send)(
-            self.conversation_name,
-            {
-                "type": "receiver_layer",
-                "conversations": self.conversation_name,
-                "data": {
-                    "status_code": 400,
-                    "message": close_code,
-                    "buffer_data": None
-                }
-            },
-        )
+        # self.conversation_name = "data_sync"
+        # async_to_sync(self.channel_layer.group_add)(
+        #     self.conversation_name,
+        #     self.channel_name,
+        # )
+        # async_to_sync(self.channel_layer.group_send)(
+        #     self.conversation_name,
+        #     {
+        #         "type": "receiver_layer",
+        #         "conversations": self.conversation_name,
+        #         "data": {
+        #             "status_code": 400,
+        #             "message": close_code,
+        #             "buffer_data": None
+        #         }
+        #     },
+        # )
+        return
 
     def receiver_layer(self, event):
         self.send(text_data=json.dumps(event))

@@ -19,6 +19,7 @@ def broadcast_data(messsage_object: dict) -> None:
         Broadcast data from here
     """
     conversation_name = 'data_sync'
+
     async_to_sync(channel_layer.group_send)(
         conversation_name,
         {
