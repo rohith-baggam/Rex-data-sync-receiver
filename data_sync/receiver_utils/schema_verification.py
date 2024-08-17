@@ -1,6 +1,9 @@
 
 from django.db import models
 from django.apps import apps
+from data_sync.receiver_utils.utils import (
+    get_model_full_path
+)
 
 
 def get_model_properties(model: models.Model) -> dict:

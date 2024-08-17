@@ -22,9 +22,6 @@ class DataSyncReceiverConsumer(WebsocketConsumer):
             self.accept()
             query_string_bytes = self.scope.get("query_string", b"")
             query_string = parse_qs(query_string_bytes.decode("utf-8"))
-            token_info = query_string["token"][0]
-            if token_info == False:
-                self.disconnect("UNAUTHORIZED")
             self.conversation_name = "receiver_socket"
             async_to_sync(self.channel_layer.group_add)(
                 self.conversation_name,
@@ -88,5 +85,5 @@ class DataSyncReceiverConsumer(WebsocketConsumer):
         # )
         return
 
-    def receiver_layer(self, event):
+    def data_sync(self, event):
         self.send(text_data=json.dumps(event))
