@@ -44,6 +44,7 @@ class Command(BaseCommand):
         # print('test-output', data)
         # loaddata_from_response(10, socket_type="data_transformation")
         self.run_data_transformation()
+        
         # print('secret_key_verification', secret_key_verification())
         # print('data_transformation', data_transformation())
         # print('data_transformation()', data_transformation())

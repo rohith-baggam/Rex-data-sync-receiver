@@ -154,8 +154,9 @@ def loaddata_from_response(index, socket_type):
     )
     print('object_data', object_data)
     load_object(
-        model_name=object_data['model_name'],
-        data=object_data
+        model_name=object_data['model'],
+        pk=object_data['pk'],
+        data=object_data['fields']
     )
 
 def data_transformation():
