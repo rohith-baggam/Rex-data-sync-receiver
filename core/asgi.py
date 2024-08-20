@@ -23,6 +23,8 @@ django_asgi_app = get_asgi_application()
 websocket_urlpatterns = [
     re_path(r'ws/receiver-socket/',
             receiver_consumer.DataSyncReceiverConsumer.as_asgi()),
+    re_path(r'ws/data-transformation-socket/',
+            receiver_consumer.DataSyncDataTransformationConsumer.as_asgi()),
 
 ]
 

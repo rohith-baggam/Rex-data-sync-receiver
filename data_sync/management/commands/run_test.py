@@ -11,7 +11,6 @@ from data_sync.receiver_utils.cipher import encrypt_data
 from data_sync.receiver_utils.utils import convert_string_to_json
 
 class Command(BaseCommand):
-
     def run_data_transformation(self):
         token_verification_data = convert_string_to_json(token_verification())
         print('token_verification', token_verification_data)
@@ -26,7 +25,7 @@ class Command(BaseCommand):
                 # schema_verification_data = convert_string_to_json(schema_verification_data)
                 print('schema_verification_data status code', schema_verification_data['data'], )
                 print("type(schema_verification_data['data'])", type(schema_verification_data['data']))
-                if secret_key_verification_data['data']['status_code']==200:
+                if schema_verification_data['data']['status_code']==200:
                     print('schema is verified')
                     if data_transformation():
                         print("Data transformation is done")
@@ -38,6 +37,32 @@ class Command(BaseCommand):
         else:
             print('Token not verified')
         return 
+    # def run_data_transformation(self):
+    #     token_verification_data = convert_string_to_json(token_verification())
+    #     print('token_verification', token_verification_data)
+    #     if token_verification_data['data']['status_code']==200:
+    #         print('verified')
+    #         secret_key_verification_data = convert_string_to_json(secret_key_verification())
+    #         if secret_key_verification_data['data']['status_code']==200:
+    #             print('verified')
+    #             schema_verification_data = schema_verification()
+    #             print('schema_verification_data output',schema_verification_data, type(schema_verification_data))
+    #             # print('schema_verification_data statuscode', schema_verification_data)
+    #             # schema_verification_data = convert_string_to_json(schema_verification_data)
+    #             print('schema_verification_data status code', schema_verification_data['data'], )
+    #             print("type(schema_verification_data['data'])", type(schema_verification_data['data']))
+    #             if secret_key_verification_data['data']['status_code']==200:
+    #                 print('schema is verified')
+    #                 if data_transformation():
+    #                     print("Data transformation is done")
+    #                 else:
+    #                     print("Data transformation is failed")
+
+    #         else:
+    #             print('Secret key not verified')
+    #     else:
+    #         print('Token not verified')
+    #     return 
 
     def handle(self, *args, **kwargs):
         # data = token_verification()

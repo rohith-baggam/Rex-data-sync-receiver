@@ -66,7 +66,7 @@ def secret_key_verification():
 def schema_verification():
     for model in get_project_models():
         from time import sleep
-        sleep(1)
+        sleep(0.1)
         data = connect_websocket(
             uri=f"{SENDER_HOST}/sender-socket/",
             message_to_send=json.dumps(
@@ -158,6 +158,15 @@ def loaddata_from_response(index, socket_type):
         pk=object_data['pk'],
         data=object_data['fields']
     )
+def data_transformation_successful():
+    socket_response = {}
+    socket_response['status_code'] = 200
+    socket_response['message'] = "Data Transformation is Done Successfully"
+    from data_sync.receiver_utils.websocket_utils import broadcast_data
+    broadcast_data(
+        messsage_object=socket_response
+    )
+    return socket_response
 
 def data_transformation():
     print('data_transformation')
@@ -172,13 +181,46 @@ def data_transformation():
     print('count', count)
     try:
         with transaction.atomic():
-            for index in range(1, count+1):
+            for index in range(0, count):
                 loaddata_from_response(
                                 index, str(
                                     inspect.currentframe(
                                     ).f_code.co_name
                                 ).upper())
+                
+        data_transformation_successful() 
     except Exception as e:
+        print('Error index', e)
         return False
            
     return True 
+
+from time import sleep
+def run_data_transformation():
+    token_verification_data = convert_string_to_json(token_verification())
+    print('token_verification', token_verification_data)
+    sleep(2.5)
+    if token_verification_data['data']['status_code']==200:
+        print('verified')
+        sleep(2.5)
+        secret_key_verification_data = convert_string_to_json(secret_key_verification())
+        if secret_key_verification_data['data']['status_code']==200:
+            print('verified')
+            
+            schema_verification_data = schema_verification()
+            print('schema_verification_data output',schema_verification_data, type(schema_verification_data))
+            # print('schema_verification_data statuscode', schema_verification_data)
+            # schema_verification_data = convert_string_to_json(schema_verification_data)
+            print('schema_verification_data status code', schema_verification_data['data'], )
+            print("type(schema_verification_data['data'])", type(schema_verification_data['data']))
+            if schema_verification_data['data']['status_code']==200:
+                print('schema is verified')
+                if data_transformation():
+                    print("Data transformation is done")
+                else:
+                    print("Data transformation is failed")
+
+        else:
+            print('Secret key not verified')
+    else:
+            print('Token not verified')

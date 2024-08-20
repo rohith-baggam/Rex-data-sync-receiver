@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     # third party packages
     'corsheaders',
     'django_data_seed',
+    'rest_framework'
 ]
 
 MIDDLEWARE = [
