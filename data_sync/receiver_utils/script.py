@@ -1,9 +1,6 @@
-import asyncio
 import inspect
 import json
-import websockets
 from .utils import (
-    request_websockt_websocket,
     connect_websocket,
     get_project_models,
     convert_string_to_json,
@@ -16,10 +13,10 @@ from core.settings import (
 )
 from data_sync.receiver_utils.cipher import encrypt_data, decrypt_data
 from data_sync.receiver_utils.schema_verification import get_model_properties
-from data_sync.models import DataSyncTestBooleanModel
 from data_sync.receiver_utils.websocket_utils import broadcast_data
 from django.db import transaction
-# Example usage
+from time import sleep
+
 
 
 def token_verification():
@@ -38,7 +35,7 @@ def token_verification():
         ))
     return data
 
-# json.dumps(data, indent=4)
+
 
 
 def secret_key_verification():
@@ -64,8 +61,7 @@ def secret_key_verification():
 
 
 def schema_verification():
-    for model in get_project_models():
-        from time import sleep
+    for model in get_project_models():     
         sleep(0.1)
         data = connect_websocket(
             uri=f"{SENDER_HOST}/sender-socket/",
@@ -86,10 +82,7 @@ def schema_verification():
                 }
             )
         )
-        print('json-data', convert_string_to_json(data))
-        print("data['data']['status_code']", data, type(data))
-        print('json-data', convert_string_to_json(data),
-              type(convert_string_to_json(data)))
+       
         data = convert_string_to_json(data)
         if data['data']['status_code'] == 400:
             broadcast_data(
@@ -103,7 +96,7 @@ def schema_verification():
 
 
 def data_information():
-    print('data_information')
+    
     response = connect_websocket(
         uri=f"{SENDER_HOST}/sender-socket/",
         message_to_send=json.dumps(
@@ -118,13 +111,12 @@ def data_information():
             }
         )
     )
-    # count = response['']
-    print('response', response)
+    
     return response
 
 
 def loaddata_from_response(index, socket_type):
-    print('loaddata_from_response')
+   
     response = connect_websocket(
                     uri=f"{SENDER_HOST}/sender-socket/",
                     message_to_send=json.dumps(
@@ -139,20 +131,14 @@ def loaddata_from_response(index, socket_type):
                         }
                     )
                 )
-    print(1)
+    
     response_json_data = convert_string_to_json(
                     response)
-    print(2)
-    print()
-    print()
-    print('index',index)
-    print()
-    print()
-    print()
+    
     object_data = decrypt_data(
         response_json_data['data']['buffer_data']
     )
-    print('object_data', object_data)
+    
     load_object(
         model_name=object_data['model'],
         pk=object_data['pk'],
@@ -169,16 +155,16 @@ def data_transformation_successful():
     return socket_response
 
 def data_transformation():
-    print('data_transformation')
+    
     data_info = data_information()
-    print('data_info', data_info, type(data_info))
+  
     json_data = convert_string_to_json(
         data_info)
-    print('json_data', json_data)
+   
     count = decrypt_data(
         json_data['data']['model_meta_data']
     )
-    print('count', count)
+    
     try:
         with transaction.atomic():
             for index in range(0, count):
@@ -190,37 +176,43 @@ def data_transformation():
                 
         data_transformation_successful() 
     except Exception as e:
-        print('Error index', e)
+        
         return False
            
     return True 
 
 from time import sleep
-def run_data_transformation():
-    token_verification_data = convert_string_to_json(token_verification())
-    print('token_verification', token_verification_data)
-    sleep(2.5)
-    if token_verification_data['data']['status_code']==200:
-        print('verified')
-        sleep(2.5)
-        secret_key_verification_data = convert_string_to_json(secret_key_verification())
-        if secret_key_verification_data['data']['status_code']==200:
-            print('verified')
-            
-            schema_verification_data = schema_verification()
-            print('schema_verification_data output',schema_verification_data, type(schema_verification_data))
-            # print('schema_verification_data statuscode', schema_verification_data)
-            # schema_verification_data = convert_string_to_json(schema_verification_data)
-            print('schema_verification_data status code', schema_verification_data['data'], )
-            print("type(schema_verification_data['data'])", type(schema_verification_data['data']))
-            if schema_verification_data['data']['status_code']==200:
-                print('schema is verified')
-                if data_transformation():
-                    print("Data transformation is done")
-                else:
-                    print("Data transformation is failed")
 
+    
+def run_data_transformation():
+    verifications = [
+        (token_verification, 'Token verification failed', 'Token verified'),
+        (secret_key_verification, 'Secret key not verified', 'Secret key verified'),
+        (schema_verification, 'Schema verification failed', 'Schema is verified')
+    ]
+    
+    for verify_func, failure_message, success_message in verifications:
+        print(f"Running {verify_func.__name__}...")
+        sleep(2.5)  # ? Simulating processing delay
+        if verify_func == schema_verification:
+            # ? For schema_verification, which doesn't use convert_string_to_json
+            verification_data = verify_func()
+            status_code = verification_data['data']['status_code']
         else:
-            print('Secret key not verified')
+            # For other verifications, use convert_string_to_json
+            verification_data = convert_string_to_json(verify_func())
+            status_code = verification_data['data']['status_code']
+        
+        if status_code == 200:
+            print(success_message)
+        else:
+            print(failure_message)
+            return
+    
+    # Final data transformation
+    if data_transformation():
+        print("Data transformation is done")
     else:
-            print('Token not verified')
+        print("Data transformation failed")
+    
+    

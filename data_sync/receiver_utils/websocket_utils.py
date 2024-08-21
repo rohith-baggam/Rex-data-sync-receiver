@@ -1,12 +1,9 @@
-
 from channels.layers import get_channel_layer
 from asgiref.sync import async_to_sync
-from core.settings import (
-    DATA_SYNC_SENDER_TOKEN,
-    SECRET_KEY
-)
 from data_sync.receiver_utils import engine
+
 channel_layer = get_channel_layer()
+
 socket_response = {
     'status_code': 400,
     'message': "",
@@ -45,11 +42,3 @@ def websocket_connectivity(text_json: dict) -> None:
             messsage_object=socket_response
         )
 
-# {
-#     "STEP_1": "HAND_SHAKE",
-#     "STEP_2": "TOKEN_VERIFICATION",
-#     "STEP_3": "SECRET_KEY_VERIFICATION",
-#     "STEP_4": "SCHEMA_VERIFICATION",
-#     "SETP_5": "DATA_TRANFORMATION"
-
-# }

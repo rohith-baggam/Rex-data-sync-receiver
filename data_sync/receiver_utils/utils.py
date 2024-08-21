@@ -7,27 +7,24 @@ import websockets
 from django.apps import apps
 from django.db import models
 from uuid import UUID
-from django.db.models import UUIDField
 from django.apps import apps
 from django.db import transaction
 from django.core.exceptions import ObjectDoesNotExist
+from decimal import Decimal
+from typing import Any
+
 
 async def request_websockt_websocket(uri, message_to_send):
     try:
         async with websockets.connect(uri) as websocket:
-            # Print the connect message
-            print("Connected to WebSocket")
-
-            # Send the message to the WebSocket server
+            # ? Send the message to the WebSocket server
             await websocket.send(message_to_send)
-            print(f"Sent message: {message_to_send}")
-
-            # Wait for and print the response from the server
+        
+            # ? Wait for and print the response from the server
             response = await websocket.recv()
             await websocket.send(message_to_send)
             response = await websocket.recv()
 
-            print(f"Received message: {response}")
             return response
     except websockets.ConnectionClosedError as e:
         print(f"Connection closed: {e}")
@@ -36,13 +33,7 @@ async def request_websockt_websocket(uri, message_to_send):
 
 
 def connect_websocket(uri, message_to_send):
-    # output = asyncio.get_event_loop(
-    # ).run_until_complete(
-    #     request_websockt_websocket(
-    #         uri=uri,
-    #         message_to_send=message_to_send
-    #     )
-    # )
+   
     output = asyncio.run(request_websockt_websocket(uri, message_to_send))
     return output
 
@@ -51,7 +42,7 @@ def get_project_models(model_name=None):
     installed_apps = [
         app_config.name for app_config in apps.get_app_configs()
     ]
-    print('all models', apps.get_models())
+    
     models = [
         model for model in apps.get_models()
         if model._meta.app_label in installed_apps and (not model_name or model_name in str(model))
@@ -104,16 +95,15 @@ def get_model_full_path(cls: models.Model):
     Returns:
         str: The full path of the model in the format 'app_label.ModelName'.
     """
-    # Get the module name
-    # Get the module name
+    # ? Get the module name
     module_name = cls.__module__
-    # Get the class name
+    # ? Get the class name
     class_name = cls.__qualname__.split('.')[-1]
 
-    # The module_name is usually in the format 'app_name.models', so we extract 'app_name'
+    # ? The module_name is usually in the format 'app_name.models', so we extract 'app_name'
     app_label = module_name.split('.')[-2]
 
-    # Return the formatted string
+    # ? Return the formatted string
     return f"{app_label}.{class_name}"
 
 
@@ -127,19 +117,18 @@ def get_model_full_path(cls: models.Model):
     Returns:
         str: The full path of the model in the format 'app_label.ModelName'.
     """
-    # Get the module name
-    # Get the module name
+    # ? Get the module name
     module_name = cls.__module__
-    # Get the class name
+    # ? Get the class name
     class_name = cls.__qualname__.split('.')[-1]
 
-    # The module_name is usually in the format 'app_name.models', so we extract 'app_name'
+    # ? The module_name is usually in the format 'app_name.models', so we extract 'app_name'
     app_label = module_name.split('.')[-2]
 
-    # Return the formatted string
+    # ? Return the formatted string
     return f"{app_label}.{class_name}"
 
-from decimal import Decimal
+
 def parse_value(value, field):
     """
     Parse a value based on its field type.
@@ -152,20 +141,20 @@ def parse_value(value, field):
         The parsed value, converted to UUID if the field is a UUIDField.
     """
     if isinstance(field, models.UUIDField) and value is not None:
-        return UUID(value)  # Convert string to UUID object
+        return UUID(value)  # ? Convert string to UUID object
     if isinstance(field, models.DecimalField) and value is not None:
-        return Decimal(value)  # Convert string or float to Decimal
+        return Decimal(value)  # ? Convert string or float to Decimal
     if isinstance(field, models.ForeignKey) and value is not None:
         related_model = field.related_model
-        return related_model.objects.get(pk=value)  # Fetch the related object
+        return related_model.objects.get(pk=value)  # ? Fetch the related object
     if isinstance(field, models.OneToOneField) and value is not None:
         related_model = field.related_model
-        return related_model.objects.get(pk=value)  # Fetch the related object
+        return related_model.objects.get(pk=value)  # ? Fetch the related object
     if isinstance(field, models.ManyToManyField) and value is not None:
         related_model = field.related_model
-        return related_model.objects.filter(pk__in=value)  # Fetch related objects
+        return related_model.objects.filter(pk__in=value)  # ? Fetch related objects
     return value
-from typing import Any
+
 
 def parse_value(value: Any, field) -> Any:
     """
@@ -179,10 +168,10 @@ def parse_value(value: Any, field) -> Any:
         Any: The parsed value appropriate for the field type.
     """
     if field.many_to_many:
-        # For many-to-many fields, we expect a list of primary keys
+        # ? For many-to-many fields, we expect a list of primary keys
         return value
     elif field.get_internal_type() == 'ForeignKey':
-        # For ForeignKey fields, we expect a single primary key
+        # ? For ForeignKey fields, we expect a single primary key
         return value
     return value
 
@@ -196,13 +185,13 @@ def load_object(model_name: str, pk: Any, data: dict):
         data (dict): A dictionary containing the serialized data for the object.
     """
     try:
-        # Split the model_name into app_label and model_name
+        # ? Split the model_name into app_label and model_name
         app_label, model_name = model_name.split('.')
 
-        # Get the model class from the app and model name
+        # ? Get the model class from the app and model name
         model = apps.get_model(app_label, model_name)
 
-        # Extract primary key and fields from the data
+        # ? Extract primary key and fields from the data
         fields = {}
         many_to_many_fields = {}
 
@@ -215,72 +204,30 @@ def load_object(model_name: str, pk: Any, data: dict):
             else:
                 fields[field] = parsed_value
 
-        # Check if an instance with this primary key already exists
+        # ? Check if an instance with this primary key already exists
         if pk is not None:
             try:
                 instance = model.objects.get(pk=pk)
-                # Update existing instance
+                # ? Update existing instance
                 for field, value in fields.items():
                     setattr(instance, field, value)
             except ObjectDoesNotExist:
-                # Create new instance if not found
+                # ? Create new instance if not found
                 instance = model(**fields)
         else:
-            # Create new instance if no primary key is provided
+            # ? Create new instance if no primary key is provided
             instance = model(**fields)
 
-        # Save the instance in a transaction to ensure atomicity
+        # ? Save the instance in a transaction to ensure atomicity
         with transaction.atomic():
             instance.save()
-            # Handle many-to-many fields separately
+            # ? Handle many-to-many fields separately
             for field, values in many_to_many_fields.items():
-                # Clear existing relationships and set new ones
+                # ? Clear existing relationships and set new ones
                 getattr(instance, field).set(values)
                 
-            instance.save()  # Save again after updating many-to-many fields
+            instance.save()  # ? Save again after updating many-to-many fields
             print(f"Successfully loaded {model_name} with PK {pk}")
 
     except Exception as e:
         print(f"Error loading object: {e}")
-# def load_object(model_name: str,pk : Any, data: dict):
-#     """
-#     Load a single object into the database from a serialized dictionary.
-    
-#     Args:
-#         model_name (str): The name of the model in the format 'app_label.ModelName'.
-#         data (dict): A dictionary containing the serialized data for the object.
-#     """
-#     try:
-#         # Split the model_name into app_label and model_name
-#         app_label, model_name = model_name.split('.')
-
-#         # Get the model class from the app and model name
-#         model = apps.get_model(app_label, model_name)
-
-#         # Extract primary key and fields from the data
-#         fields = {
-#             field: parse_value(value, model._meta.get_field(field)) 
-#             for field, value in data.items()
-#         }
-
-#         # Check if an instance with this primary key already exists
-#         if pk is not None:
-#             try:
-#                 instance = model.objects.get(pk=pk)
-#                 # Update existing instance
-#                 for field, value in fields.items():
-#                     setattr(instance, field, value)
-#             except ObjectDoesNotExist:
-#                 # Create new instance if not found
-#                 instance = model(**fields)
-#         else:
-#             # Create new instance if no primary key is provided
-#             instance = model(**fields)
-
-#         # Save the instance in a transaction to ensure atomicity
-#         with transaction.atomic():
-#             instance.save()
-#             print(f"Successfully loaded {model_name} with PK {pk}")
-
-#     except Exception as e:
-#         print(f"Error loading object: {e}")
