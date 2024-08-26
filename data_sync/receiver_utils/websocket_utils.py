@@ -11,11 +11,11 @@ socket_response = {
 }
 
 
-def broadcast_data(messsage_object: dict ) -> None:
+def broadcast_data(messsage_object: dict) -> None:
     """
         Broadcast data from here
     """
-    conversation_name : str = 'data_sync'
+    conversation_name: str = 'data_sync'
 
     async_to_sync(channel_layer.group_send)(
         conversation_name,
@@ -41,4 +41,3 @@ def websocket_connectivity(text_json: dict) -> None:
         broadcast_data(
             messsage_object=socket_response
         )
-

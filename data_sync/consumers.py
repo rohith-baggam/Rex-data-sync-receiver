@@ -7,6 +7,7 @@ from data_sync.receiver_utils.websocket_utils import (
 import json
 from data_sync.receiver_utils.script import run_data_transformation
 
+
 class DataSyncReceiverConsumer(WebsocketConsumer):
 
     """
@@ -66,10 +67,13 @@ class DataSyncReceiverConsumer(WebsocketConsumer):
                 close_code=f"Receiver was disconnected due to , {str(e)}")
 
     def disconnect(self, close_code="Web disconnected"):
-      
+
         return
 
     def data_sync(self, event):
+        self.send(text_data=json.dumps(event))
+
+    def data_transformation_successful(self, event):
         self.send(text_data=json.dumps(event))
 
 
@@ -117,7 +121,7 @@ class DataSyncDataTransformationConsumer(WebsocketConsumer):
                 close_code=f"Receiver was disconnected due to , {str(e)}")
 
     def disconnect(self, close_code="Web disconnected"):
-        
+
         return
 
     def data_transformation_controller(self, event):
