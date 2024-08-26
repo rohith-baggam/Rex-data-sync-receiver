@@ -19,7 +19,7 @@ async def request_websockt_websocket(uri, message_to_send):
         async with websockets.connect(uri) as websocket:
             # ? Send the message to the WebSocket server
             await websocket.send(message_to_send)
-        
+
             # ? Wait for and print the response from the server
             response = await websocket.recv()
             await websocket.send(message_to_send)
@@ -33,7 +33,7 @@ async def request_websockt_websocket(uri, message_to_send):
 
 
 def connect_websocket(uri, message_to_send):
-   
+
     output = asyncio.run(request_websockt_websocket(uri, message_to_send))
     return output
 
@@ -42,7 +42,7 @@ def get_project_models(model_name=None):
     installed_apps = [
         app_config.name for app_config in apps.get_app_configs()
     ]
-    
+
     models = [
         model for model in apps.get_models()
         if model._meta.app_label in installed_apps and (not model_name or model_name in str(model))
@@ -107,28 +107,6 @@ def get_model_full_path(cls: models.Model):
     return f"{app_label}.{class_name}"
 
 
-def get_model_full_path(cls: models.Model):
-    """
-    Extract the full path of a Django model class from its class reference.
-
-    Args:
-        cls (type): The model class.
-
-    Returns:
-        str: The full path of the model in the format 'app_label.ModelName'.
-    """
-    # ? Get the module name
-    module_name = cls.__module__
-    # ? Get the class name
-    class_name = cls.__qualname__.split('.')[-1]
-
-    # ? The module_name is usually in the format 'app_name.models', so we extract 'app_name'
-    app_label = module_name.split('.')[-2]
-
-    # ? Return the formatted string
-    return f"{app_label}.{class_name}"
-
-
 def parse_value(value, field):
     """
     Parse a value based on its field type.
@@ -146,24 +124,27 @@ def parse_value(value, field):
         return Decimal(value)  # ? Convert string or float to Decimal
     if isinstance(field, models.ForeignKey) and value is not None:
         related_model = field.related_model
-        return related_model.objects.get(pk=value)  # ? Fetch the related object
+        # ? Fetch the related object
+        return related_model.objects.get(pk=value)
     if isinstance(field, models.OneToOneField) and value is not None:
         related_model = field.related_model
-        return related_model.objects.get(pk=value)  # ? Fetch the related object
+        # ? Fetch the related object
+        return related_model.objects.get(pk=value)
     if isinstance(field, models.ManyToManyField) and value is not None:
         related_model = field.related_model
-        return related_model.objects.filter(pk__in=value)  # ? Fetch related objects
+        # ? Fetch related objects
+        return related_model.objects.filter(pk__in=value)
     return value
 
 
 def parse_value(value: Any, field) -> Any:
     """
     Parse a value based on the field type.
-    
+
     Args:
         value (Any): The value to be parsed.
         field (Field): The Django model field instance.
-    
+
     Returns:
         Any: The parsed value appropriate for the field type.
     """
@@ -175,10 +156,11 @@ def parse_value(value: Any, field) -> Any:
         return value
     return value
 
+
 def load_object(model_name: str, pk: Any, data: dict):
     """
     Load a single object into the database from a serialized dictionary.
-    
+
     Args:
         model_name (str): The name of the model in the format 'app_label.ModelName'.
         pk (Any): The primary key of the object to be loaded or created.
@@ -198,7 +180,7 @@ def load_object(model_name: str, pk: Any, data: dict):
         for field, value in data.get('fields', {}).items():
             field_obj = model._meta.get_field(field)
             parsed_value = parse_value(value, field_obj)
-            
+
             if field_obj.many_to_many:
                 many_to_many_fields[field] = parsed_value
             else:
@@ -225,7 +207,7 @@ def load_object(model_name: str, pk: Any, data: dict):
             for field, values in many_to_many_fields.items():
                 # ? Clear existing relationships and set new ones
                 getattr(instance, field).set(values)
-                
+
             instance.save()  # ? Save again after updating many-to-many fields
             print(f"Successfully loaded {model_name} with PK {pk}")
 
