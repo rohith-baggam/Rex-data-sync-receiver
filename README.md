@@ -138,5 +138,5 @@ LinkedIn: [LinkedIn Profile](https://www.linkedin.com/in/rohith-baggam/)
 
 The frontend Figma design and development were contributed by:
 
-- [GitHub Profile](https://github.com/samasarunreddy/Data_sync) for Frontend
+- [Frontend GitHub Profile](https://github.com/samasarunreddy/Data_sync)
 - [Figma Design Link](https://www.figma.com/design/lcAVBTVFooPSZxiiJJm3fg/Projects?node-id=60-2&t=GtEGEGXnPc58x9VO-1)
